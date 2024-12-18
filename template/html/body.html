@@ -1,0 +1,29 @@
+<body>
+	<div id=header class=header>
+		<a href='/'>Article editor</a>
+		<div>%s</div>
+	</div>
+
+	<div class='page'>
+		<div class='main'>
+			<h2>Create/Edit Article</h2>
+			<p>Create a new article by filling out the fields below. Edit an article by typing the beginning of the title in
+				the title field, selecting the title from the auto-complete list, and changing the text in the
+				textfield.</p>
+			<form action='index.php' method='post'>
+				<label>
+					<input name='title' type='text' placeholder='Article title...' value='%s'>
+				</label>
+				<br/>
+				<label>
+					<textarea name='body' placeholder='Article body...'>%s</textarea>
+				</label>
+				<br/>
+				<a class='submit-button' href='#'>Submit</a>
+			</form>
+			<br/>
+			<h2>Preview</h2>
+			%s
+			%s
+			<h2>Articles</h2>
+			<ul>
