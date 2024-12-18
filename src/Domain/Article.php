@@ -7,8 +7,11 @@ namespace App\Domain;
  */
 class Article {
 
-	const ARTICLE_DIR = 'articles/';
-	const DATE_FORMAT = 'Y-m-d H:i:s';
+	private const ARTICLE_DIR = 'articles/';
+	private const DATE_FORMAT = 'Y-m-d H:i:s';
+
+	// Allowed file extensions. The empty string is for files without an extension (plain text)
+	private const ALLOWED_EXTENSIONS = [ 'txt', '' ];
 
 	private $title;
 
@@ -109,5 +112,40 @@ class Article {
 		}
 
 		return $articles;
+	}
+
+	/**
+	 * Count the words in all the articles in the directory.
+	 * @return int
+	 */
+	public function countWordsInArticlesDirectory(): int {
+		// Check if the directory exists and is valid
+		if ( !is_dir( self::ARTICLE_DIR ) ) {
+			throw new \RuntimeException( "Invalid directory path: " . self::ARTICLE_DIR );
+		}
+
+		// Initialize the word count variable
+		$wordCount = 0;
+		// Create a new DirectoryIterator object
+		$directoryIterator = new \DirectoryIterator( self::ARTICLE_DIR );
+
+		foreach ( $directoryIterator as $article ) {
+			// Get the file extension
+			$extension = strtolower( $article->getExtension() );
+
+			// Skip the . and .. directories and files with invalid extensions
+			if ( $article->isDot() || !$article->isFile() ||
+				!in_array( $extension, self::ALLOWED_EXTENSIONS ) ||
+				$article->getSize() === 0
+			) {
+				continue;
+			}
+
+			// Get the content of the article
+			$content = file_get_contents( self::ARTICLE_DIR . $article->getFilename() );
+			$wordCount += preg_match_all( '/\b\w+\b/', $content );
+		}
+		// Return the total word count
+		return $wordCount;
 	}
 }

@@ -23,66 +23,39 @@ use App\Infrastructure\Request;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$app = new Article();
+// Initialize the Article and Request classes
+$article = new Article();
 $request = new Request();
 
-echo "<head>
-<link rel='stylesheet' href='http://design.wikimedia.org/style-guide/css/build/wmui-style-guide.min.css'>
-<link rel='stylesheet' href='styles.css'>
-<script src='main.js'></script>
-</head>";
-
-$title = '';
+// Get the title from the query parameters if it is set
+$title = $request->getQueryParam( 'title' );
 $body = '';
+
+// Separating the header and body HTML content for better readability
+echo sprintf( file_get_contents( './template/html/header.html' ), $title );
+
+// If a title is set in the query parameters, fetch the article content
 if ( $request->getQueryParam( 'title' ) ) {
 	$title = htmlentities( $request->getQueryParam( 'title' ) );
-	$body = $app->fetch( $_GET );
+	$body = $article->fetchByTitle( $title );
 }
 
-$wordCount = wfGetWc();
-echo "<body>";
-echo "<div id=header class=header>
-<a href='/'>Article editor</a><div>$wordCount</div>
-</div>";
-echo "<div class='page'>";
-echo "<div class='main'>";
-echo "<h2>Create/Edit Article</h2>
-<p>Create a new article by filling out the fields below. Edit an article by typing the beginning of the title in the title field, selecting the title from the auto-complete list, and changing the text in the textfield.</p>
-<form action='index.php' method='post'>
-<input name='title' type='text' placeholder='Article title...' value=$title>
-<br />
-<textarea name='body' placeholder='Article body...' >$body</textarea>
-<br />
-<a class='submit-button' href='#' />Submit</a>
-<br />
-<h2>Preview</h2>
-$title\n\n
-$body
-<h2>Articles</h2>
-<ul>
-<li><a href='index.php?title=Foo'>Foo</a></li>
-</ul>
-</form>";
+// Get the word count of all articles
+$wordCount = $article->countWordsInArticlesDirectory() . " words written";
 
-if ( $_POST ) {
-	$app->save( sprintf( "articles/%s", $_POST['title'] ), $_POST['body'] );
+// Separating the body HTML content for better readability.
+echo sprintf( file_get_contents( './template/html/body.html' ), $wordCount, $title, $body, $title, $body );
+
+// Get the list of articles and display them in the list
+$listOfArticles = $article->getListOfArticles();
+foreach ( $listOfArticles as $item ) {
+	echo sprintf( file_get_contents( './template/html/listOfArticles.html' ), $item, $item );
 }
-echo "</div>";
-echo "</div>";
-echo "</body";
 
-function wfGetWc() {
-	global $wgBaseArticlePath;
-	$wgBaseArticlePath = 'articles/';
-	$wc = 0;
-	$dir = new DirectoryIterator( $wgBaseArticlePath );
-	foreach ( $dir as $fileinfo ) {
-		if ( $fileinfo->isDot() ) {
-			continue;
-		}
-		$c = file_get_contents( $wgBaseArticlePath . $fileinfo->getFilename() );
-		$ch = explode( " ", $c );
-		$wc += count( $ch );
-	}
-	return "$wc words written";
+// Including the footer HTML content for the page
+echo file_get_contents( './template/html/footer.html' );
+
+// If the request is a POST request, save the article
+if ( $request->getBody() ) {
+	$article->save( $request->getBody()['title'], $request->getBody()['body'] );
 }

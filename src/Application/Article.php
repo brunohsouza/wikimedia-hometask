@@ -28,7 +28,9 @@ class Article {
 	 * @param array $requestBody
 	 */
 	public function validateArticleCreationParams( $requestBody ): void {
-		if ( !isset( $requestBody['title'] ) || !isset( $requestBody['body'] ) ) {
+		if ( !$requestBody['title'] || empty( $requestBody['title'] ) !== null ||
+			!$requestBody['body'] || empty( $requestBody['body'] ) !== null
+		) {
 			throw new \InvalidArgumentException( 'Title and body are required fields.' );
 		}
 	}
@@ -100,5 +102,9 @@ class Article {
 		}
 
 		return $this->fetchByTitle( $title );
+	}
+
+	public function countWordsInArticlesDirectory(): string {
+		return $this->article->countWordsInArticlesDirectory();
 	}
 }
