@@ -10,76 +10,56 @@ class Article {
 	const ARTICLE_DIR = 'articles/';
 	const DATE_FORMAT = 'Y-m-d H:i:s';
 
-	private $uid;
-
 	private $title;
 
 	private $body;
 
 	private $author;
 
-	private $created_at;
+	private $createdAt;
 
-	private $updated_at;
-
-	/**
-	 * Function to initialize the article object.
-	 * @param string|null $title
-	 * @param string|null $body
-	 * @param string|null $author
-	 * @return void
-	 */
-	public function __construct( ?string $title = null, ?string $body = null, ?string $author = null ) {
-		$this->setUid();
-		$this->title = $title ?? '';
-		$this->body = $body ?? '';
-		$this->author = $author ?? '';
-		$this->setCreatedAt( $title );
-		$this->setUpdatedAt( $title );
-	}
-
-	public function setUid(): void {
-		$this->uid = uniqid( self::ARTICLE_DIR, true );
-	}
+	private $updatedAt;
 
 	/**
-	 * Set the created_at property based on the file creation date.
+	 * Set the createdAt property based on the file creation date.
 	 * @param string $title
 	 * @return void
 	 */
 	public function setCreatedAt( string $title ): void {
 		if ( file_exists( sprintf( self::ARTICLE_DIR . '%s', $title ) ) ) {
-			$this->created_at = date( self::DATE_FORMAT, filectime( sprintf( self::ARTICLE_DIR . '%s', $title ) ) );
-		}
-	}
-
-	/**
-	 * Set the updated_at property based on the latest file modification.
-	 * @param string $title
-	 * @return void
-	 */
-	public function setUpdatedAt( string $title ): void {
-		if ( file_exists( sprintf( self::ARTICLE_DIR . '%s', $title ) ) ) {
-			$this->updated_at = date( self::DATE_FORMAT, filemtime( sprintf( self::ARTICLE_DIR . '%s', $title ) ) );
+			$this->createdAt = date( self::DATE_FORMAT, filectime( sprintf( self::ARTICLE_DIR . '%s', $title ) ) );
 		}
 	}
 
 	/**
 	 * Save the article to a file.
+	 * @param string $title
+	 * @param string|null $body
+	 * @param string|null $author
+	 * @throws \DomainException
 	 * @return void
 	 */
 	public function save( string $title, ?string $body = null, ?string $author = null ): void {
-		$filename = sprintf( self::ARTICLE_DIR . '%s', $this->title );
+		$filename = sprintf( self::ARTICLE_DIR . '%s', $title );
 
 		if ( !file_exists( $filename ) ) {
 			$this->title = $title;
 			$this->body = $body;
 			$this->author = $author;
-			$this->setCreatedAt( $title );
-			$this->setUpdatedAt( $title );
-		}
+			// Set the createdAt date only once with the current date
+			$this->createdAt = ( ( new \DateTime() )->format( self::DATE_FORMAT ) );
+		} else {
+			$content = file_get_contents( $filename );
+			[ $previousBody, $previousAuthor ] = explode( 'Author: ', $content );
 
-		file_put_contents( $filename, json_encode( $this ) );
+			$this->title = $title;
+			$this->body = $body ?? $previousBody;
+			$this->author = $author ?? $previousAuthor;
+			$this->setCreatedAt( $title );
+		}
+		$this->updatedAt = ( ( new \DateTime() )->format( self::DATE_FORMAT ) );
+
+		file_put_contents( $filename, $this->body . PHP_EOL . 'Author: ' . $this->author );
 	}
 
 	/**
@@ -116,5 +96,18 @@ class Article {
 	 */
 	public function getListOfArticles(): array {
 		return array_diff( scandir( self::ARTICLE_DIR ), [ '.', '..', '.DS_Store' ] );
+	}
+
+	public function getListOfArticlesByPrefixSearch( string $prefixSearch ): array {
+		$list = $this->getListOfArticles();
+		$articles = [];
+
+		foreach ( $list as $item ) {
+			if ( stripos( $item, $prefixSearch ) === 0 ) {
+				$articles[] = $item;
+			}
+		}
+
+		return $articles;
 	}
 }

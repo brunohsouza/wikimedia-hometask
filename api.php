@@ -20,19 +20,36 @@ $article = new Article();
 $request = new Request();
 $response = new Response();
 
-if ( !$request->hasQueryParam( 'title' ) && !$request->getQueryParam( 'prefixsearch' ) ) {
-	echo json_encode( [ 'content' => $article->getListOfArticles() ] );
-} elseif ( $request->hasQueryParam( 'prefixsearch' ) ) {
-	$list = $article->getListOfArticles();
-	$ma = [];
+try {
+	switch ( $request->getMethod() ) {
+		case 'POST':
+			$requestBody = $request->getBody();
+			$article->validateArticleCreationParams( $requestBody );
+			$article->save( $requestBody['title'], $requestBody['body'], $requestBody['author'] );
 
-	foreach ( $list as $ar ) {
-		if ( strpos( strtolower( $ar ), strtolower( $request->getQueryParam( 'prefixsearch' ) ) ) === 0 ) {
-			$ma[] = $ar;
-		}
+			echo $response->sendJson( [ 'message' => 'Article created successfully' ] );
+
+			break;
+		case 'PUT':
+			$requestBody = $request->getBody();
+			$article->validateArticleCreationParams( $requestBody );
+			$article->update( $requestBody['title'], $requestBody['body'], $requestBody['author'] );
+
+			echo $response->sendJson( [ 'message' => 'Article updated successfully' ] );
+
+			break;
+		case 'GET':
+			$title = $request->getQueryParam( 'title' );
+			$prefixsearch = $request->getQueryParam( 'prefixsearch' );
+
+			echo $response->sendJson( [ 'content' => $article->handleGetArticleRequest( $title, $prefixsearch ) ] );
+
+			break;
+		default:
+			echo $response->sendJson( [ 'error' => 'Method not allowed' ], 405 );
+
+			break;
 	}
-
-	$response->sendJson( [ 'content' => $ma ] );
-} else {
-	echo json_encode( [ 'content' => $article->fetch( $_GET ) ] );
+} catch ( \Exception $e ) {
+	echo $response->sendJson( [ 'error' => $e->getMessage() ], 412 );
 }

@@ -12,10 +12,10 @@ class Response {
 	 * @param int $status
 	 * @return string
 	 */
-	public function sendJson( $data, int $status = 200 ): string {
+	public function sendJson( array $data, int $status = 200 ): string {
 		http_response_code( $status );
 		header( self::HEADERS );
 
-		return json_encode( $data );
+		return json_encode( $data, JSON_PRETTY_PRINT );
 	}
 }

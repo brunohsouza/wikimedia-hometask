@@ -25,11 +25,13 @@ class Request {
 
 	/**
 	 * Get a value from the $_POST superglobal and sanitize it.
+	 * The return type is missing here as it should use union_types,
+	 * but it is not available in the current PHP version on this project
 	 *
 	 * @param string $key
-	 * @return string|null
+	 * @return array|null
 	 */
-	public function post( $key ): ?string {
+	public function post( $key ) {
 		if ( $this->hasPost( $key ) ) {
 			if ( is_array( $_POST[$key] ) ) {
 				return $this->sanitizeArrayInput( $_POST[$key] );
@@ -82,11 +84,9 @@ class Request {
 
 	/**
 	 * Get the request body.
-	 *
-	 * @return false|string
 	 */
-	public function getBody(): string {
-		return file_get_contents( 'php://input' );
+	public function getBody() {
+		return json_decode( file_get_contents( 'php://input' ), true );
 	}
 
 	/**
@@ -156,8 +156,12 @@ class Request {
 	 * @param string $key
 	 * @return string|null
 	 */
-	public function getQueryParam( $key ) {
+	public function getQueryParam( string $key ): ?string {
 		$query = parse_url( $this->getUri(), PHP_URL_QUERY );
+		if ( !$query ) {
+			return null;
+		}
+
 		parse_str( $query, $params );
 		return $this->sanitizeStringInput( $params[$key] ?? null );
 	}
