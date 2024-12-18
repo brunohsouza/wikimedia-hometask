@@ -7,7 +7,7 @@ namespace App\Infrastructure;
  */
 class Request {
 
-	const HEADERS = 'Content-Type: application/json';
+	private const HEADERS = 'Content-Type: application/json';
 
 	/**
 	 * Get a value from the $_GET superglobal and sanitize it.
@@ -84,8 +84,9 @@ class Request {
 
 	/**
 	 * Get the request body.
+	 * @return array
 	 */
-	public function getBody() {
+	public function getBody(): array {
 		return json_decode( file_get_contents( 'php://input' ), true );
 	}
 
@@ -110,18 +111,6 @@ class Request {
 	}
 
 	/**
-	 * Get a specific segment from the URI.
-	 *
-	 * @param int $index
-	 * @return string|null
-	 */
-	public function getSegment( int $index ): ?string {
-		$segments = $this->getSegments();
-
-		return $segments[$index] ?? null;
-	}
-
-	/**
 	 * Sanitize a string input.
 	 *
 	 * @param string $stringInput
@@ -129,13 +118,10 @@ class Request {
 	 * @return string|null
 	 */
 	private function sanitizeStringInput( string $stringInput, bool $isPost = false ): ?string {
-		$inputType = $isPost ? INPUT_POST : INPUT_GET;
-
-		$stringInput = filter_input( $inputType, $stringInput, FILTER_SANITIZE_STRING );
-		$stringInput = filter_input( $inputType, $stringInput, FILTER_FLAG_EMPTY_STRING_NULL );
-		$stringInput = filter_input( $inputType, $stringInput, FILTER_SANITIZE_SPECIAL_CHARS );
-
-		return $stringInput;
+		return filter_var(
+			$stringInput,
+			FILTER_SANITIZE_STRING | FILTER_SANITIZE_SPECIAL_CHARS
+		);
 	}
 
 	/**
@@ -163,21 +149,8 @@ class Request {
 		}
 
 		parse_str( $query, $params );
+
 		return $this->sanitizeStringInput( $params[$key] ?? null );
 	}
 
-	/**
-	 * Check if a query parameter exists in the URI.
-	 *
-	 * @param string $key
-	 * @return bool
-	 */
-	public function hasQueryParam( $key ) {
-		$query = parse_url( $this->getUri(), PHP_URL_QUERY );
-		parse_str( $query, $params );
-
-		return isset( $params[$key] );
-	}
-
 }
-

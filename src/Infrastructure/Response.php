@@ -3,7 +3,7 @@
 namespace App\Infrastructure;
 
 class Response {
-	const HEADERS = 'Content-Type: application/json';
+	private const HEADERS = 'Content-Type: application/json';
 
 	/**
 	 * Send a JSON response.

@@ -18,10 +18,13 @@ require_once __DIR__ . '/vendor/autoload.php';
 $article = new Article();
 // Using the Request class to handle incoming requests
 $request = new Request();
+// Using the Response class to handle outgoing responses
 $response = new Response();
 
 try {
+	// Switch statement to handle different HTTP methods
 	switch ( $request->getMethod() ) {
+		// POST method to create a new article
 		case 'POST':
 			$requestBody = $request->getBody();
 			$article->validateArticleCreationParams( $requestBody );
@@ -30,6 +33,11 @@ try {
 			echo $response->sendJson( [ 'message' => 'Article created successfully' ] );
 
 			break;
+		// PUT method to update an existing article. Usually requires an ID to identify the article.
+		// In this case, it's using the title as the identifier.
+		// It means that the title should be unique for each article. If a title is sent that does not exist,
+		// it will reply with an error message.
+		// This could be improved by using a unique ID for each article.
 		case 'PUT':
 			$requestBody = $request->getBody();
 			$article->validateArticleCreationParams( $requestBody );
@@ -38,6 +46,9 @@ try {
 			echo $response->sendJson( [ 'message' => 'Article updated successfully' ] );
 
 			break;
+		/**
+		 * GET method to retrieve an article by title.
+		 */
 		case 'GET':
 			$title = $request->getQueryParam( 'title' );
 			$prefixsearch = $request->getQueryParam( 'prefixsearch' );
@@ -45,6 +56,9 @@ try {
 			echo $response->sendJson( [ 'content' => $article->handleGetArticleRequest( $title, $prefixsearch ) ] );
 
 			break;
+		/**
+		 * If the method is not allowed (POST, PUT or GET), return an error message.
+		 */
 		default:
 			echo $response->sendJson( [ 'error' => 'Method not allowed' ], 405 );
 
