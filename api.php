@@ -1,7 +1,8 @@
 <?php
 
-use App\App;
-use App\Request;
+use App\Application\App;
+use App\Infrastructure\Request;
+use App\Infrastructure\Response;
 
 // TODO A: Improve the readability of this file through refactoring and documentation.
 // TODO B: Clean up the following code so that it's easier to see the different
@@ -15,7 +16,9 @@ use App\Request;
 require_once __DIR__ . '/vendor/autoload.php';
 
 $app = new App();
+// Using the Request class to handle incoming requests
 $request = new Request();
+$response = new Response();
 
 if ( !$request->hasQueryParam( 'title' ) && !$request->getQueryParam( 'prefixsearch' ) ) {
 	echo json_encode( [ 'content' => $app->getListOfArticles() ] );
@@ -24,12 +27,12 @@ if ( !$request->hasQueryParam( 'title' ) && !$request->getQueryParam( 'prefixsea
 	$ma = [];
 
 	foreach ( $list as $ar ) {
-		if ( strpos( strtolower( $ar ), strtolower( $_GET['prefixsearch'] ) ) === 0 ) {
+		if ( strpos( strtolower( $ar ), strtolower( $request->getQueryParam( 'prefixsearch' ) ) ) === 0 ) {
 			$ma[] = $ar;
 		}
 	}
 
-	echo json_encode( [ 'content' => $ma ] );
+	$response->sendJson( [ 'content' => $ma ] );
 } else {
 	echo json_encode( [ 'content' => $app->fetch( $_GET ) ] );
 }

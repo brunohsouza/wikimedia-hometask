@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use App\App;
+use App\Application\App;
 
 /**
  * @coversDefaultClass App

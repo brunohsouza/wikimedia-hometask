@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Application;
 
 // TODO: Improve the readability of this file through refactoring and documentation.
 
@@ -17,10 +17,8 @@ class App {
 		$this->save( $ttl, $bd );
 	}
 
-	public function fetch( $get ) {
-		$title = $get['title'] ?? null;
-		return is_array( $get ) ? file_get_contents( sprintf( 'articles/%s', $get['title'] ) ) :
-			file_get_contents( sprintf( 'articles/%s', $_GET['title'] ) );
+	public function fetch( string $title ): string {
+		return file_get_contents( sprintf( 'articles/%s', $title ) );
 	}
 
 	public function getListOfArticles() {

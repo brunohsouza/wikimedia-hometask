@@ -18,8 +18,8 @@
 // TODO F: Implement a simple unit test to ensure the correctness of different parts
 // of the application.
 
-use App\App;
-use App\Request;
+use App\Application\App;
+use App\Infrastructure\Request;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -37,7 +37,6 @@ $body = '';
 if ( $request->getQueryParam( 'title' ) ) {
 	$title = htmlentities( $request->getQueryParam( 'title' ) );
 	$body = $app->fetch( $_GET );
-	$body = file_get_contents( sprintf( 'articles/%s', $title ) );
 }
 
 $wordCount = wfGetWc();
