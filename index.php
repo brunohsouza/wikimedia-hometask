@@ -18,12 +18,12 @@
 // TODO F: Implement a simple unit test to ensure the correctness of different parts
 // of the application.
 
-use App\Application\App;
+use App\Application\Article;
 use App\Infrastructure\Request;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$app = new App();
+$app = new Article();
 $request = new Request();
 
 echo "<head>

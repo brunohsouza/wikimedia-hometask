@@ -1,6 +1,6 @@
 <?php
 
-use App\Application\App;
+use App\Application\Article;
 use App\Infrastructure\Request;
 use App\Infrastructure\Response;
 
@@ -15,15 +15,15 @@ use App\Infrastructure\Response;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$app = new App();
+$article = new Article();
 // Using the Request class to handle incoming requests
 $request = new Request();
 $response = new Response();
 
 if ( !$request->hasQueryParam( 'title' ) && !$request->getQueryParam( 'prefixsearch' ) ) {
-	echo json_encode( [ 'content' => $app->getListOfArticles() ] );
+	echo json_encode( [ 'content' => $article->getListOfArticles() ] );
 } elseif ( $request->hasQueryParam( 'prefixsearch' ) ) {
-	$list = $app->getListOfArticles();
+	$list = $article->getListOfArticles();
 	$ma = [];
 
 	foreach ( $list as $ar ) {
@@ -34,5 +34,5 @@ if ( !$request->hasQueryParam( 'title' ) && !$request->getQueryParam( 'prefixsea
 
 	$response->sendJson( [ 'content' => $ma ] );
 } else {
-	echo json_encode( [ 'content' => $app->fetch( $_GET ) ] );
+	echo json_encode( [ 'content' => $article->fetch( $_GET ) ] );
 }
